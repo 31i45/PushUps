@@ -1,52 +1,41 @@
-<html lang="zh-CN"><head>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
     <title>俯卧撑计数器</title>
     <style>
+        /* 保持原有样式不变 */
         :root {
-            /* 十二花神主题色 */
             --month-1-bg: #fef9f8;       /* 1月梅花 */
             --month-1-cell: rgba(240, 140, 155, 0.15);
-            
             --month-2-bg: #fff8f5;       /* 2月杏花 */
             --month-2-cell: rgba(245, 170, 150, 0.15);
-            
             --month-3-bg: #fff7f8;       /* 3月桃花 */
             --month-3-cell: rgba(250, 120, 140, 0.18);
-            
             --month-4-bg: #fcf9f7;       /* 4月牡丹 */
             --month-4-cell: rgba(220, 100, 150, 0.2);
-            
             --month-5-bg: #fff5f3;       /* 5月石榴 */
             --month-5-cell: rgba(230, 80, 80, 0.18);
-            
             --month-6-bg: #f5f9f9;       /* 6月荷花 */
             --month-6-cell: rgba(180, 210, 210, 0.2);
-            
             --month-7-bg: #f7f7fa;       /* 7月玉簪 */
             --month-7-cell: rgba(200, 200, 230, 0.18);
-            
             --month-8-bg: #fefbf5;       /* 8月桂花 */
             --month-8-cell: rgba(240, 210, 130, 0.18);
-            
             --month-9-bg: #faf7f0;       /* 9月菊花 */
             --month-9-cell: rgba(230, 200, 100, 0.18);
-            
             --month-10-bg: #fef5f7;      /* 10月芙蓉 */
             --month-10-cell: rgba(245, 130, 160, 0.18);
-            
             --month-11-bg: #f9f7f8;      /* 11月山茶 */
             --month-11-cell: rgba(220, 90, 110, 0.18);
-            
             --month-12-bg: #f5f8f5;      /* 12月水仙 */
             --month-12-cell: rgba(210, 220, 190, 0.18);
-            
-            /* 基础文本色 */
             --text-primary: #333333;
             --text-secondary: #666666;
-            --row-height: 48px; /* 适度增加行高以匹配放大的数字 */
+            --row-height: 48px;
         }
 
+        /* 保持其他样式不变 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             height: 100vh;
@@ -63,16 +52,7 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
-        /* 计数区域 */
-        #count-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 15px;
-        }
-
+        #count-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 15px; }
         #count {
             font-size: clamp(12rem, 40vw, 32rem);
             font-weight: 200;
@@ -82,12 +62,7 @@
             letter-spacing: -0.03em;
             transition: transform 0.07s cubic-bezier(0.2, 0, 0.2, 1);
         }
-
-        #count.jump {
-            transform: scale(1.015);
-        }
-
-        /* 日历区域 - 精确控制高度 */
+        #count.jump { transform: scale(1.015); }
         #calendar {
             width: 100%;
             background-color: var(--current-cell-bg);
@@ -96,9 +71,11 @@
             box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);
             position: relative;
             overflow: hidden;
-            transition: height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transform: translateY(100%);
+            opacity: 0;
         }
-
+        #calendar.visible { transform: translateY(0); opacity: 1; }
         .calendar-month-bg {
             position: absolute;
             top: 50%;
@@ -112,87 +89,90 @@
             z-index: 0;
             pointer-events: none;
         }
-
-        .calendar-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 1;
-            height: 22px; /* 微调星期标题高度以保持比例 */
-        }
-
-        .calendar-weekday {
-            text-align: center;
-            font-size: 0.7rem; /* 适度放大星期文字 */
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* 日期单元格 - 固定行高确保一致性 */
+        .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8px; position: relative; z-index: 1; height: 22px; }
+        .calendar-weekday { text-align: center; font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; position: relative; z-index: 1; }
         .calendar-day {
-            height: var(--row-height); /* 使用固定行高变量 */
+            height: var(--row-height);
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 5px;
-            font-size: 1.35rem; /* 显著放大日期数字 */
+            font-size: 1.35rem;
             color: var(--cell-text-color);
             transition: all 0.15s ease;
             background-color: transparent !important;
         }
-
         .calendar-day.today {
-            box-shadow: 0 0 0 1px var(--current-cell-glow), 
-                        0 0 5px 1.5px var(--current-cell-glow);
+            box-shadow: 0 0 0 1px var(--current-cell-glow), 0 0 5px 1.5px var(--current-cell-glow);
             font-weight: 600;
-            font-size: 1.45rem; /* 今日日期数字稍大以突出显示 */
+            font-size: 1.45rem;
             color: var(--text-primary) !important;
         }
-
-        .calendar-day.has-data:not(.today) {
-            font-weight: 600;
-        }
-
-        .calendar-day.other-month,
-        .calendar-day:not(.has-data):not(.today) {
-            color: transparent;
-        }
-
-        @media (hover: hover) {
-            .calendar-day:not(.today):hover {
-                background-color: var(--current-cell-hover);
-            }
-        }
-
+        .calendar-day.has-data:not(.today) { font-weight: 600; }
+        .calendar-day.other-month, .calendar-day:not(.has-data):not(.today) { color: transparent; }
+        @media (hover: hover) { .calendar-day:not(.today):hover { background-color: var(--current-cell-hover); } }
         @supports (padding: env(safe-area-inset-top)) {
-            body {
-                padding-top: env(safe-area-inset-top);
-                padding-bottom: env(safe-area-inset-bottom);
-            }
+            body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
         }
-
-        [data-loading="true"] {
-            opacity: 0;
-            transform: translateY(5px);
+        [data-loading="true"] { opacity: 0; transform: translateY(5px); }
+        .sync-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ccc;
+            z-index: 2;
+            transition: background-color 0.3s ease;
         }
+        .sync-indicator.syncing { background-color: #3498db; }
+        .sync-indicator.synced { background-color: #2ecc71; }
+        .code-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--current-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .code-overlay.hidden { opacity: 0; pointer-events: none; }
+        .code-input {
+            width: 180px;
+            height: 48px;
+            padding: 0 15px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border: none;
+            border-radius: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+        .code-input:focus { outline: none; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1); }
+        .code-input::placeholder { color: var(--text-secondary); letter-spacing: normal; }
     </style>
 </head>
 <body id="container" oncontextmenu="return false" ontouchmove="return false">
+    <div class="code-overlay" id="code-overlay">
+        <input type="text" class="code-input" id="code-input" maxlength="4" placeholder="输入4位印记">
+    </div>
+    <div class="sync-indicator" id="sync-indicator"></div>
     <div id="count-container">
         <div id="count" data-loading="true">0</div>
     </div>
     <div id="calendar">
         <div class="calendar-month-bg" id="calendar-month-bg"></div>
-        
         <div class="calendar-weekdays">
             <div class="calendar-weekday">日</div>
             <div class="calendar-weekday">一</div>
@@ -207,44 +187,260 @@
 
     <script>
         (function() {
+            // 全局状态变量
             let currentCount = 0;
             let isAnimating = false;
-            let isFirstVisit = !localStorage.getItem('pushupVisited');
-            let workoutData = JSON.parse(localStorage.getItem('pushupData')) || {};
-            let calendarRows = 6; // 默认行数
+            let isFirstVisit = false;
+            let workoutData = {};
+            let calendarRows = 6;
+            let userCode = null;
+            let default4BitCode = ''; // 系统生成的默认4位印记
+            let isSyncing = false;
+            const SALT = 'pushup_counter_2024';
             
+            // DOM元素引用
             const elements = {
                 container: document.getElementById('container'),
                 count: document.getElementById('count'),
                 calendar: document.getElementById('calendar'),
                 calendarGrid: document.getElementById('calendar-grid'),
                 monthBg: document.getElementById('calendar-month-bg'),
-                root: document.documentElement
+                root: document.documentElement,
+                syncIndicator: document.getElementById('sync-indicator'),
+                codeOverlay: document.getElementById('code-overlay'),
+                codeInput: document.getElementById('code-input')
             };
 
+            // 日期相关计算
             const today = new Date();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth(); // 0-11
-            const todayDate = today.getDate();
+            const currentYear = today.getUTCFullYear();
+            const currentMonth = today.getUTCMonth();
+            const todayDate = today.getUTCDate();
             const todayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(todayDate).padStart(2, '0')}`;
             
             // 月份数据
             const monthData = [
-                { abbr: "Jan", flower: "梅花" },   // 1月
-                { abbr: "Feb", flower: "杏花" },   // 2月
-                { abbr: "Mar", flower: "桃花" },   // 3月
-                { abbr: "Apr", flower: "牡丹" },   // 4月
-                { abbr: "May", flower: "石榴" },   // 5月
-                { abbr: "Jun", flower: "荷花" },   // 6月
-                { abbr: "Jul", flower: "玉簪" },   // 7月
-                { abbr: "Aug", flower: "桂花" },   // 8月
-                { abbr: "Sep", flower: "菊花" },   // 9月
-                { abbr: "Oct", flower: "芙蓉" },   // 10月
-                { abbr: "Nov", flower: "山茶" },   // 11月
-                { abbr: "Dec", flower: "水仙" }    // 12月
+                { abbr: "Jan", flower: "梅花" },
+                { abbr: "Feb", flower: "杏花" },
+                { abbr: "Mar", flower: "桃花" },
+                { abbr: "Apr", flower: "牡丹" },
+                { abbr: "May", flower: "石榴" },
+                { abbr: "Jun", flower: "荷花" },
+                { abbr: "Jul", flower: "玉簪" },
+                { abbr: "Aug", flower: "桂花" },
+                { abbr: "Sep", flower: "菊花" },
+                { abbr: "Oct", flower: "芙蓉" },
+                { abbr: "Nov", flower: "山茶" },
+                { abbr: "Dec", flower: "水仙" }
             ];
 
-            // 计算当月日历精确行数（无空行）
+            /**
+             * MD5哈希算法实现（保持不变）
+             */
+            function md5(str) {
+                function rotateLeft(n, s) { return (n << s) | (n >>> (32 - s)); }
+                function toHex(n) {
+                    const hexChars = "0123456789abcdef";
+                    return hexChars.charAt((n >> 4) & 0x0F) + hexChars.charAt(n & 0x0F);
+                }
+                function utf8Encode(str) {
+                    str = str.replace(/\r\n/g, "\n");
+                    let utftext = "";
+                    for (let n = 0; n < str.length; n++) {
+                        const c = str.charCodeAt(n);
+                        if (c < 128) {
+                            utftext += String.fromCharCode(c);
+                        } else if ((c > 127) && (c < 2048)) {
+                            utftext += String.fromCharCode((c >> 6) | 192);
+                            utftext += String.fromCharCode((c & 63) | 128);
+                        } else {
+                            utftext += String.fromCharCode((c >> 12) | 224);
+                            utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                            utftext += String.fromCharCode((c & 63) | 128);
+                        }
+                    }
+                    return utftext;
+                }
+                let d = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+                str = utf8Encode(str);
+                const bitLength = str.length * 8;
+                str += String.fromCharCode(0x80);
+                while ((str.length % 64) !== 56) str += String.fromCharCode(0x00);
+                str += String.fromCharCode(0x00, 0x00, 0x00, 0x00, (bitLength >>> 24) & 0xFF, (bitLength >>> 16) & 0xFF, (bitLength >>> 8) & 0xFF, bitLength & 0xFF);
+                for (let i = 0; i < str.length; i += 64) {
+                    const w = new Array(16);
+                    for (let j = 0; j < 16; j++) {
+                        w[j] = (str.charCodeAt(i + j * 4) << 24) | (str.charCodeAt(i + j * 4 + 1) << 16) | (str.charCodeAt(i + j * 4 + 2) << 8) | str.charCodeAt(i + j * 4 + 3);
+                    }
+                    let a = d[0], b = d[1], c = d[2], e = d[3];
+                    for (let j = 0; j < 64; j++) {
+                        let f, g;
+                        if (j < 16) {
+                            f = (b & c) | (~b & e);
+                            g = j;
+                        } else if (j < 32) {
+                            f = (e & b) | (~e & c);
+                            g = (5 * j + 1) % 16;
+                        } else if (j < 48) {
+                            f = b ^ c ^ e;
+                            g = (3 * j + 5) % 16;
+                        } else {
+                            f = c ^ (b | ~e);
+                            g = (7 * j) % 16;
+                        }
+                        const temp = e;
+                        e = d[2];
+                        d[2] = b;
+                        d[1] = b + rotateLeft(a + f + [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821, 0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8, 0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a, 0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70, 0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665, 0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314][j] + w[g], j < 16 ? 7 : j < 32 ? 12 : j < 48 ? 17 : 22);
+                        d[0] = temp;
+                    }
+                    d[0] += a;
+                    d[1] += b;
+                    d[2] += c;
+                    d[3] += e;
+                }
+                return toHex((d[0] >> 24) & 0xFF) + toHex((d[0] >> 16) & 0xFF) + toHex((d[0] >> 8) & 0xFF) + toHex(d[0] & 0xFF) +
+                       toHex((d[1] >> 24) & 0xFF) + toHex((d[1] >> 16) & 0xFF) + toHex((d[1] >> 8) & 0xFF) + toHex(d[1] & 0xFF) +
+                       toHex((d[2] >> 24) & 0xFF) + toHex((d[2] >> 16) & 0xFF) + toHex((d[2] >> 8) & 0xFF) + toHex(d[2] & 0xFF) +
+                       toHex((d[3] >> 24) & 0xFF) + toHex((d[3] >> 16) & 0xFF) + toHex((d[3] >> 8) & 0xFF) + toHex(d[3] & 0xFF);
+            }
+
+            /**
+             * 生成设备指纹（确保同一设备稳定，不同设备独立）
+             */
+            function generateDeviceFingerprint() {
+                // 收集设备稳定信息
+                const fingerprintSources = [
+                    navigator.userAgent,
+                    screen.width,
+                    screen.height,
+                    screen.colorDepth,
+                    new Date().getTimezoneOffset(),
+                    navigator.language,
+                    navigator.hardwareConcurrency || '',
+                    navigator.deviceMemory || ''
+                ].join('|');
+                
+                return md5(fingerprintSources);
+            }
+
+            /**
+             * 生成4位16进制默认印记
+             */
+            function generateDefault4BitCode() {
+                const fingerprint = generateDeviceFingerprint();
+                // 取MD5哈希的前4位作为默认印记
+                return fingerprint.substring(0, 4).toLowerCase();
+            }
+
+            /**
+             * 获取JSON文件名（直接以4位印记命名）
+             */
+            function getFileName() {
+                return `${userCode}.json`;
+            }
+
+            /**
+             * 校验印记是否存在（调用后端校验接口）
+             */
+            async function checkCodeExists(code) {
+                try {
+                    const response = await fetch(`/check/${code}`);
+                    return response.ok;
+                } catch (error) {
+                    console.error('校验印记失败:', error);
+                    return false;
+                }
+            }
+
+            /**
+             * 初始化用户输入框
+             */
+            function setupCodeInput() {
+                // 生成默认4位印记
+                default4BitCode = generateDefault4BitCode();
+                
+                // 自动填充默认印记
+                elements.codeInput.value = default4BitCode;
+                
+                // 自动聚焦输入框
+                elements.codeInput.focus();
+
+                // 输入处理：自动转为小写，限制长度为4位
+                elements.codeInput.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toLowerCase().replace(/[^0-9a-f]/g, '').slice(0, 4);
+                });
+
+                // 提交处理
+                elements.codeInput.addEventListener('keyup', (e) => {
+                    if (e.target.value.length === 4 || e.key === 'Enter') {
+                        submitUserCode(e.target.value.trim());
+                    }
+                });
+            }
+
+            /**
+             * 提交用户输入的4位印记
+             */
+            async function submitUserCode(code) {
+                if (!code || code.length !== 4) return;
+
+                elements.codeInput.blur();
+                
+                // 检查印记是否存在
+                const codeExists = await checkCodeExists(code);
+                
+                // 核心逻辑处理
+                if (code === default4BitCode && !codeExists) {
+                    // 输入默认印记且不存在 - 新用户，创建文件
+                    userCode = code;
+                    proceedAfterValidation();
+                } else if (codeExists) {
+                    // 输入其他印记且存在 - 老用户，加载数据
+                    userCode = code;
+                    proceedAfterValidation();
+                } else {
+                    // 输入其他印记但不存在 - 重置输入
+                    // alert('印记不存在，请重新输入');
+                    elements.codeInput.value = '';
+                    elements.codeInput.focus();
+                    return;
+                }
+            }
+
+            /**
+             * 验证通过后继续流程
+             */
+            function proceedAfterValidation() {
+                elements.codeOverlay.addEventListener('transitionend', function onTransitionEnd(event) {
+                    if (event.propertyName === 'opacity') {
+                        elements.codeOverlay.removeEventListener('transitionend', onTransitionEnd);
+                        initAfterInput();
+                    }
+                }, { once: true });
+
+                elements.codeOverlay.classList.add('hidden');
+            }
+
+            /**
+             * 同步状态显示函数（保持不变）
+             */
+            function showSyncing() {
+                isSyncing = true;
+                elements.syncIndicator.className = 'sync-indicator syncing';
+            }
+            
+            function showSynced() {
+                isSyncing = false;
+                elements.syncIndicator.className = 'sync-indicator synced';
+                setTimeout(() => {
+                    if (!isSyncing) elements.syncIndicator.className = 'sync-indicator';
+                }, 3000);
+            }
+
+            /**
+             * 日历相关函数（保持不变）
+             */
             function calculateExactCalendarRows() {
                 const firstDay = new Date(currentYear, currentMonth, 1).getDay();
                 const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -252,16 +448,13 @@
                 return Math.ceil(totalCells / 7);
             }
 
-            // 根据精确行数设置日历总高度
             function setCalendarExactHeight(rows) {
-                // 总高度 = 行高×行数 + 标题高度 + 内边距
                 const rowHeight = parseInt(getComputedStyle(elements.root).getPropertyValue('--row-height'));
-                const totalHeight = (rowHeight * rows) + 48; // 调整总高度计算值以匹配新行高
+                const totalHeight = (rowHeight * rows) + 48;
                 elements.calendar.style.height = `${totalHeight}px`;
                 calendarRows = rows;
             }
 
-            // 颜色处理
             function adjustColorBrightness(color, factor) {
                 const rgbaMatch = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
                 if (!rgbaMatch) return color;
@@ -278,7 +471,6 @@
                 return `rgba(${Math.round(newR)}, ${Math.round(newG)}, ${Math.round(newB)}, ${a})`;
             }
 
-            // 设置当月主题色
             function setMonthTheme() {
                 const monthIndex = currentMonth + 1;
                 const cellBg = getComputedStyle(elements.root).getPropertyValue(`--month-${monthIndex}-cell`);
@@ -290,7 +482,6 @@
                 elements.root.style.setProperty('--current-cell-hover', adjustColorBrightness(cellBg, 1.3));
             }
 
-            // 初始化日历（无空行设计）
             function initCalendar() {
                 elements.monthBg.textContent = monthData[currentMonth].abbr;
                 
@@ -299,93 +490,130 @@
                 const prevMonthDays = firstDayOfMonth;
                 const totalCellsNeeded = prevMonthDays + totalDaysOfMonth;
                 
-                // 计算精确行数并设置高度
                 const exactRows = calculateExactCalendarRows();
                 setCalendarExactHeight(exactRows);
                 
-                const fragment = document.createDocumentFragment();
-                const totalCellsToRender = exactRows * 7; // 确保填满所有行
-                
-                // 上月剩余天数
-                for (let i = 0; i < prevMonthDays; i++) {
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'calendar-day other-month';
-                    fragment.appendChild(dayEl);
-                }
-                
-                // 当月天数
-                for (let day = 1; day <= totalDaysOfMonth; day++) {
-                    const dayEl = document.createElement('div');
-                    const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                requestAnimationFrame(() => {
+                    const fragment = document.createDocumentFragment();
+                    const totalCellsToRender = exactRows * 7;
                     
-                    dayEl.className = 'calendar-day';
-                    if (day === todayDate) {
-                        dayEl.classList.add('today');
-                        dayEl.textContent = workoutData[dayKey] !== undefined ? workoutData[dayKey] : 0;
-                    }
-                    else if (workoutData[dayKey] && workoutData[dayKey] > 0) {
-                        dayEl.textContent = workoutData[dayKey];
-                        dayEl.classList.add('has-data');
+                    for (let i = 0; i < prevMonthDays; i++) {
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'calendar-day other-month';
+                        fragment.appendChild(dayEl);
                     }
                     
-                    fragment.appendChild(dayEl);
-                }
-                
-                // 填充剩余单元格（确保行数完整但视觉隐藏）
-                const remainingCells = totalCellsToRender - totalCellsNeeded;
-                for (let i = 0; i < remainingCells; i++) {
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'calendar-day other-month';
-                    fragment.appendChild(dayEl);
-                }
-                
-                elements.calendarGrid.appendChild(fragment);
-
-                // 首次访问引导
-                if (isFirstVisit) {
-                    localStorage.setItem('pushupVisited', 'true');
-                    
-                    setTimeout(() => {
-                        const todayCell = elements.calendarGrid.querySelector('.calendar-day.today');
-                        if (todayCell) {
-                            todayCell.style.transform = 'scale(1.1)';
-                            setTimeout(() => {
-                                todayCell.style.transform = '';
-                            }, 800);
+                    for (let day = 1; day <= totalDaysOfMonth; day++) {
+                        const dayEl = document.createElement('div');
+                        const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        
+                        dayEl.className = 'calendar-day';
+                        if (day === todayDate) {
+                            dayEl.classList.add('today');
+                            dayEl.textContent = workoutData[dayKey] !== undefined ? workoutData[dayKey] : 0;
+                        } else if (workoutData[dayKey] && workoutData[dayKey] > 0) {
+                            dayEl.textContent = workoutData[dayKey];
+                            dayEl.classList.add('has-data');
                         }
-                    }, 1200);
-                }
+                        
+                        fragment.appendChild(dayEl);
+                    }
+                    
+                    const remainingCells = totalCellsToRender - totalCellsNeeded;
+                    for (let i = 0; i < remainingCells; i++) {
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'calendar-day other-month';
+                        fragment.appendChild(dayEl);
+                    }
+                    
+                    elements.calendarGrid.appendChild(fragment);
+
+                    if (isFirstVisit) {
+                        isFirstVisit = false;
+                        setTimeout(() => {
+                            const todayCell = elements.calendarGrid.querySelector('.calendar-day.today');
+                            if (todayCell) {
+                                todayCell.style.transform = 'scale(1.1)';
+                                setTimeout(() => todayCell.style.transform = '', 800);
+                            }
+                        }, 1200);
+                    }
+
+                    setTimeout(() => {
+                        elements.calendar.classList.add('visible');
+                    }, 50);
+                });
             }
 
-            // 数据持久化
+            /**
+             * 数据存储和加载函数（修改为使用新的文件名规则）
+             */
             function saveTodayData() {
                 workoutData[todayKey] = currentCount;
+                
                 if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => {
-                        localStorage.setItem('pushupData', JSON.stringify(workoutData));
-                    });
+                    requestIdleCallback(() => saveToServer());
                 } else {
-                    setTimeout(() => {
-                        localStorage.setItem('pushupData', JSON.stringify(workoutData));
-                    }, 500);
+                    setTimeout(saveToServer, 500);
                 }
                 updateTodayCalendarCell();
             }
 
-            // 更新今日单元格
+            async function saveToServer() {
+                if (!userCode) return;
+                
+                try {
+                    showSyncing();
+                    const fileName = getFileName();
+                    const response = await fetch(`/data-files/${fileName}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(workoutData)
+                    });
+                    if (!response.ok) throw new Error('保存失败');
+                    showSynced();
+                } catch (error) {
+                    console.error('保存失败:', error);
+                    showSynced();
+                }
+            }
+
+            async function loadFromServer() {
+                if (!userCode) return;
+                
+                try {
+                    showSyncing();
+                    const fileName = getFileName();
+                    const response = await fetch(`/data-files/${fileName}`);
+                    if (response.ok) {
+                        workoutData = await response.json();
+                        isFirstVisit = Object.keys(workoutData).length === 0;
+                    } else {
+                        workoutData = {};
+                        isFirstVisit = true;
+                    }
+                    showSynced();
+                } catch (error) {
+                    console.error('加载失败:', error);
+                    workoutData = {};
+                    isFirstVisit = true;
+                    showSynced();
+                }
+            }
+
+            /**
+             * 其他功能函数（保持不变）
+             */
             function updateTodayCalendarCell() {
                 const todayCell = elements.calendarGrid.querySelector('.calendar-day.today');
                 if (todayCell) {
                     todayCell.textContent = currentCount;
                     todayCell.classList.add('has-data');
                     todayCell.style.transform = 'scale(1.05)';
-                    setTimeout(() => {
-                        todayCell.style.transform = '';
-                    }, 100);
+                    setTimeout(() => todayCell.style.transform = '', 100);
                 }
             }
 
-            // 点击处理
             function handleClick(e) {
                 e.stopPropagation();
                 e.preventDefault();
@@ -404,10 +632,10 @@
                 }, 70);
             }
 
-            // 初始化
-            function init() {
+            async function initAfterInput() {
+                await loadFromServer();
                 setMonthTheme();
-                currentCount = workoutData[todayKey] !== undefined ? workoutData[todayKey] : 0;
+                currentCount = workoutData[todayKey] || 0;
                 elements.count.textContent = currentCount;
 
                 elements.count.style.transition = 'opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)';
@@ -418,9 +646,23 @@
 
                 initCalendar();
                 elements.container.addEventListener('click', handleClick);
+                
                 window.addEventListener('beforeunload', () => {
-                    localStorage.setItem('pushupData', JSON.stringify(workoutData));
+                    if (userCode) {
+                        const fileName = getFileName();
+                        fetch(`/data-files/${fileName}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(workoutData),
+                            keepalive: true
+                        });
+                    }
                 });
+            }
+
+            function init() {
+                setMonthTheme();
+                setupCodeInput();
             }
 
             if (document.readyState === 'loading') {
@@ -430,4 +672,5 @@
             }
         })();
     </script>
-</body></html>
+</body>
+</html>

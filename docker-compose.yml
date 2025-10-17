@@ -1,0 +1,23 @@
+networks:
+  pushups:
+    driver: bridge
+    name: pushups
+
+services:
+  pushups:
+    # 使用自定义镜像
+    image: pushup-counter:latest
+    container_name: pushup-counter
+    restart: unless-stopped
+    ports:
+      - "10089:80"
+    volumes:
+      - /DATA/AppData/pushups/:/usr/share/nginx/html/:rw
+      - /DATA/AppData/pushups/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - pushups
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
