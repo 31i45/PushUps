@@ -306,31 +306,29 @@
             }
 
             /**
-             * 生成设备指纹（确保同一设备稳定，不同设备独立）
+             * 生成4位16进制默认印记（新实现）
+             * 基于：微秒级时间戳 + 6位随机数 + SHA-256 + 随机截取4位
              */
-            function generateDeviceFingerprint() {
-                // 收集设备稳定信息
-                const fingerprintSources = [
-                    navigator.userAgent,
-                    screen.width,
-                    screen.height,
-                    screen.colorDepth,
-                    new Date().getTimezoneOffset(),
-                    navigator.language,
-                    navigator.hardwareConcurrency || '',
-                    navigator.deviceMemory || ''
-                ].join('|');
+            async function generateDefault4BitCode() {
+                // 1. 获取微秒级时间戳（保留3位小数）
+                const highResTime = performance.now().toFixed(3);
                 
-                return md5(fingerprintSources);
-            }
-
-            /**
-             * 生成4位16进制默认印记
-             */
-            function generateDefault4BitCode() {
-                const fingerprint = generateDeviceFingerprint();
-                // 取MD5哈希的前4位作为默认印记
-                return fingerprint.substring(0, 4).toLowerCase();
+                // 2. 生成6位随机数（补0确保6位）
+                const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+                
+                // 3. 组合输入字符串
+                const input = `${highResTime}-${random}`;
+                
+                // 4. 使用SHA-256生成哈希
+                const encoder = new TextEncoder();
+                const buffer = await window.crypto.subtle.digest('SHA-256', encoder.encode(input));
+                const hashHex = Array.from(new Uint8Array(buffer))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join(''); // SHA-256哈希的16进制字符串（64位）
+                
+                // 5. 随机选择连续4位（0-60之间的随机起始位置，确保截取4位不越界）
+                const startPos = Math.floor(Math.random() * 61); // 61 = 64 - 4
+                return hashHex.slice(startPos, startPos + 4).toLowerCase();
             }
 
             /**
@@ -354,11 +352,11 @@
             }
 
             /**
-             * 初始化用户输入框
+             * 初始化用户输入框（调整为异步处理）
              */
-            function setupCodeInput() {
-                // 生成默认4位印记
-                default4BitCode = generateDefault4BitCode();
+            async function setupCodeInput() {
+                // 生成默认4位印记（异步）
+                default4BitCode = await generateDefault4BitCode();
                 
                 // 自动填充默认印记
                 elements.codeInput.value = default4BitCode;
@@ -401,7 +399,6 @@
                     proceedAfterValidation();
                 } else {
                     // 输入其他印记但不存在 - 重置输入
-                    // alert('印记不存在，请重新输入');
                     elements.codeInput.value = '';
                     elements.codeInput.focus();
                     return;
@@ -546,7 +543,7 @@
             }
 
             /**
-             * 数据存储和加载函数（修改为使用新的文件名规则）
+             * 数据存储和加载函数（保持不变）
              */
             function saveTodayData() {
                 workoutData[todayKey] = currentCount;
@@ -660,9 +657,9 @@
                 });
             }
 
-            function init() {
+            async function init() {
                 setMonthTheme();
-                setupCodeInput();
+                await setupCodeInput(); // 等待印记生成后再完成初始化
             }
 
             if (document.readyState === 'loading') {
