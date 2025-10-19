@@ -109,7 +109,10 @@
             font-size: 1.45rem;
             color: var(--text-primary) !important;
         }
-        .calendar-day.has-data:not(.today) { font-weight: 600; }
+        .calendar-day.has-data:not(.today) { 
+            font-weight: 600; 
+            color: var(--text-primary) !important;
+        }
         .calendar-day.other-month, .calendar-day:not(.has-data):not(.today) { color: transparent; }
         @media (hover: hover) { .calendar-day:not(.today):hover { background-color: var(--current-cell-hover); } }
         @supports (padding: env(safe-area-inset-top)) {
