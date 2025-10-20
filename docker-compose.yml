@@ -1,23 +1,50 @@
-networks:
-  pushups:
-    driver: bridge
-    name: pushups
-
+name: romantic_ehjas
 services:
   pushups:
-    # 使用自定义镜像
-    image: pushup-counter:latest
+    cpu_shares: 90
+    command: []
     container_name: pushup-counter
-    restart: unless-stopped
-    ports:
-      - "10089:80"
-    volumes:
-      - /DATA/AppData/pushups/:/usr/share/nginx/html/:rw
-      - /DATA/AppData/pushups/default.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - pushups
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 128M
+    hostname: pushup-counter
+    image: pushup-counter:latest
+    labels:
+      icon: https://cdn.create.vista.com/api/media/small/471035190/stock-vector-boy-doing-pushups-yellow-glowing
+    ports:
+      - target: 80
+        published: "10089"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /DATA/AppData/pushups/
+        target: /usr/share/nginx/html
+      - type: bind
+        source: /DATA/AppData/pushups/default.conf
+        target: /etc/nginx/conf.d/default.conf
+    devices: []
+    cap_add: []
+    environment: []
+    networks:
+      - pushups
+    privileged: false
+networks:
+  pushups:
+    name: pushups
+    driver: bridge
+x-casaos:
+  author: self
+  category: self
+  hostname: ""
+  icon: https://cdn.create.vista.com/api/media/small/471035190/stock-vector-boy-doing-pushups-yellow-glowing
+  index: /
+  is_uncontrolled: false
+  port_map: "10089"
+  scheme: http
+  store_app_id: romantic_ehjas
+  title:
+    custom: ""
+    en_us: pushups
