@@ -412,14 +412,9 @@
              * 验证通过后继续流程
              */
             function proceedAfterValidation() {
-                elements.codeOverlay.addEventListener('transitionend', function onTransitionEnd(event) {
-                    if (event.propertyName === 'opacity') {
-                        elements.codeOverlay.removeEventListener('transitionend', onTransitionEnd);
-                        initAfterInput();
-                    }
-                }, { once: true });
-
                 elements.codeOverlay.classList.add('hidden');
+                // 直接通过定时器触发，避免事件依赖
+                setTimeout(initAfterInput, 200); // 200ms与CSS中opacity过渡时间一致
             }
 
             /**
