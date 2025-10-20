@@ -216,9 +216,9 @@
 
             // 日期相关计算
             const today = new Date();
-            const currentYear = today.getUTCFullYear();
-            const currentMonth = today.getUTCMonth();
-            const todayDate = today.getUTCDate();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            const todayDate = today.getDate();
             const todayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(todayDate).padStart(2, '0')}`;
             
             // 月份数据
